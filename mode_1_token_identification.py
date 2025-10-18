@@ -25,23 +25,12 @@ def spi_transfer(tx):
     set_cs_high()
     return rx
 
-# === Built-In Self Test ===
-def run_bist():
-    # Command 0x80, pad to 160 bytes
-    tx = [0xFF] + [0x00] * (160 - 1)
+# === Identification ===
+def identification():
+    tx = [0x01, 0x00, 0x00, 0x00] + [0x00] * 156   # total length = 160
     rx = spi_transfer(tx)
-
-    # Extract fields
-    tid    = ''.join(f"{b:02x}" for b in rx[5:37])
-    brw    = ''.join(f"{b:02x}" for b in rx[38:54])   # BRW = 16 bytes
-    bek    = ''.join(f"{b:02x}" for b in rx[54:70])   # BEK = 16 bytes
-    result = ''.join(f"{b:02x}" for b in rx[70:72])   # Result = 2 bytes
-
-    # Print results
-    print("TID   :", tid)
-    print("BRW   :", brw)
-    print("BEK   :", bek)
-    print("Result:", result)
+    tid = ''.join(f"{b:02x}" for b in rx[5:37])    # bytes 5–36
+    print("TID:", tid)
 
 if __name__ == "__main__":
-    run_bist()
+    identification()
