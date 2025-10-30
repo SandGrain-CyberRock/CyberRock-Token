@@ -1,25 +1,50 @@
 import spidev
-import gpiod
+import RPi.GPIO as GPIO
 import time
+import atexit
 
-# === SPI setup ===
+# === Configuration ===
+SPI_BUS = 0        # /dev/spidev0.0
+SPI_DEV = 0
+SPI_MAX_HZ = 10_000_000
+SPI_MODE = 0
+
+# Manual Chip-Select pin (BCM numbering)
+CS_BCM = 22        # <-- change if you wired CS to another pin
+
+# === Setup ===
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(CS_BCM, GPIO.OUT, initial=GPIO.HIGH)
+
 spi = spidev.SpiDev()
-spi.open(0, 0)              # Bus 0, Device 0
-spi.max_speed_hz = 10_000_000
-spi.mode = 0
+spi.open(SPI_BUS, SPI_DEV)
+spi.max_speed_hz = SPI_MAX_HZ
+spi.mode = SPI_MODE
 
-# === GPIO setup for CS pin ===
-chip = gpiod.Chip("gpiochip4")
-CS_LINE_OFFSET = 22
-cs_line = chip.get_line(CS_LINE_OFFSET)
-cs_line.request(consumer="spi-cs", type=gpiod.LINE_REQ_DIR_OUT, default_vals=[1])
+def cleanup():
+    try:
+        GPIO.output(CS_BCM, GPIO.HIGH)
+    except Exception:
+        pass
+    try:
+        spi.close()
+    except Exception:
+        pass
+    try:
+        GPIO.cleanup(CS_BCM)
+    except Exception:
+        pass
 
-def set_cs_low():  cs_line.set_value(0)
-def set_cs_high(): cs_line.set_value(1)
+atexit.register(cleanup)
 
+# === Chip Select Control ===
+def set_cs_low():  GPIO.output(CS_BCM, GPIO.LOW)
+def set_cs_high(): GPIO.output(CS_BCM, GPIO.HIGH)
+
+# === SPI Transfer ===
 def spi_transfer(tx):
     set_cs_low()
-    time.sleep(0.00001)
+    time.sleep(0.00001)           # small guard delay (~10 µs)
     rx = spi.xfer2(tx)
     time.sleep(0.00001)
     set_cs_high()

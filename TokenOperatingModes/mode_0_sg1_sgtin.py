@@ -1,36 +1,69 @@
 import spidev
-import gpiod
+import RPi.GPIO as GPIO
 import time
+import atexit
 
-# === SPI setup ===
+# ========= Config =========
+# BCM pin used for manual Chip-Select (change to the pin you wired)
+CS_BCM = 22
+
+SPI_BUS = 0   # /dev/spidev0.0
+SPI_DEV = 0
+
+SPI_MAX_HZ = 10_000_000
+SPI_MODE = 0
+
+# ========= Setup =========
+# GPIO (RPi.GPIO uses a single controller on Pi 4)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(CS_BCM, GPIO.OUT, initial=GPIO.HIGH)
+
+# SPI
 spi = spidev.SpiDev()
-spi.open(0, 0)              # Bus 0, Device 0
-spi.max_speed_hz = 10_000_000
-spi.mode = 0
+spi.open(SPI_BUS, SPI_DEV)        # /dev/spidev0.0
+spi.max_speed_hz = SPI_MAX_HZ
+spi.mode = SPI_MODE
 
-# === GPIO setup for CS pin ===
-chip = gpiod.Chip("gpiochip4")
-CS_LINE_OFFSET = 22
-cs_line = chip.get_line(CS_LINE_OFFSET)
-cs_line.request(consumer="spi-cs", type=gpiod.LINE_REQ_DIR_OUT, default_vals=[1])
+def cleanup():
+    # Ensure CS idles high and resources are released
+    try:
+        GPIO.output(CS_BCM, GPIO.HIGH)
+    except Exception:
+        pass
+    try:
+        spi.close()
+    except Exception:
+        pass
+    try:
+        GPIO.cleanup(CS_BCM)
+    except Exception:
+        pass
 
-def set_cs_low():  cs_line.set_value(0)
-def set_cs_high(): cs_line.set_value(1)
+atexit.register(cleanup)
 
+# ========= CS helpers =========
+def set_cs_low():  GPIO.output(CS_BCM, GPIO.LOW)
+def set_cs_high(): GPIO.output(CS_BCM, GPIO.HIGH)
+
+# ========= SPI transfer with manual CS =========
 def spi_transfer(tx):
+    # tx must be a list/bytes-like of ints [0..255]
     set_cs_low()
-    time.sleep(0.00001)
+    time.sleep(0.00001)           # ~10 µs guard time (adjust if needed)
     rx = spi.xfer2(tx)
     time.sleep(0.00001)
     set_cs_high()
     return rx
 
-# === Identification ===
+# ========= Your command =========
 def identification():
     tx = [0x00, 0x00, 0x00, 0x00] + [0x00] * 156   # total length = 160
     rx = spi_transfer(tx)
-    sgtin = ''.join(f"{b:02x}" for b in rx[5:30])    # bytes 5–30
+    sgtin = ''.join(f"{b:02x}" for b in rx[5:30])  # bytes 5–30
     print("SGTIN:", sgtin)
 
 if __name__ == "__main__":
-    identification()
+    try:
+        identification()
+    except KeyboardInterrupt:
+        pass

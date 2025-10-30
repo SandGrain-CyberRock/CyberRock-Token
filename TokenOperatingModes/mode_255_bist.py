@@ -1,41 +1,71 @@
 import spidev
-import gpiod
+import RPi.GPIO as GPIO
 import time
+import atexit
 
-# === SPI setup ===
+# === Configuration (BCM numbering) ===
+SPI_BUS = 0          # /dev/spidev0.0
+SPI_DEV = 0
+SPI_MAX_HZ = 10_000_000
+SPI_MODE = 0
+
+# Manual Chip-Select pin (BCM numbering)
+# Use a free GPIO pin (avoid BCM8/BCM7 unless hardware CS is disabled)
+CS_BCM = 22
+
+# === Setup ===
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(CS_BCM, GPIO.OUT, initial=GPIO.HIGH)
+
 spi = spidev.SpiDev()
-spi.open(0, 0)              # Bus 0, Device 0
-spi.max_speed_hz = 10_000_000
-spi.mode = 0
+spi.open(SPI_BUS, SPI_DEV)
+spi.max_speed_hz = SPI_MAX_HZ
+spi.mode = SPI_MODE
 
-# === GPIO setup for CS pin ===
-chip = gpiod.Chip("gpiochip4")
-CS_LINE_OFFSET = 22
-cs_line = chip.get_line(CS_LINE_OFFSET)
-cs_line.request(consumer="spi-cs", type=gpiod.LINE_REQ_DIR_OUT, default_vals=[1])
+def cleanup():
+    """Release SPI and GPIO on exit."""
+    try:
+        GPIO.output(CS_BCM, GPIO.HIGH)
+    except Exception:
+        pass
+    try:
+        spi.close()
+    except Exception:
+        pass
+    try:
+        GPIO.cleanup(CS_BCM)
+    except Exception:
+        pass
 
-def set_cs_low():  cs_line.set_value(0)
-def set_cs_high(): cs_line.set_value(1)
+atexit.register(cleanup)
 
+# === CS control ===
+def set_cs_low():
+    GPIO.output(CS_BCM, GPIO.LOW)
+
+def set_cs_high():
+    GPIO.output(CS_BCM, GPIO.HIGH)
+
+# === SPI transfer ===
 def spi_transfer(tx):
     set_cs_low()
-    time.sleep(0.00001)
+    time.sleep(0.00001)  # ~10 µs guard time
     rx = spi.xfer2(tx)
     time.sleep(0.00001)
     set_cs_high()
     return rx
 
-# === Built-In Self Test ===
+# === Built-In Self Test (BIST) ===
 def run_bist():
-    # Command 0x80, pad to 160 bytes
+    # Command 0xFF (BIST), pad to 160 bytes
     tx = [0xFF] + [0x00] * (160 - 1)
     rx = spi_transfer(tx)
 
     # Extract fields
-    tid    = ''.join(f"{b:02x}" for b in rx[5:37])
-    brw    = ''.join(f"{b:02x}" for b in rx[38:54])   # BRW = 16 bytes
-    bek    = ''.join(f"{b:02x}" for b in rx[54:70])   # BEK = 16 bytes
-    result = ''.join(f"{b:02x}" for b in rx[70:72])   # Result = 2 bytes
+    tid    = ''.join(f"{b:02x}" for b in rx[5:37])    # bytes 5–36
+    brw    = ''.join(f"{b:02x}" for b in rx[38:54])   # 16 bytes
+    bek    = ''.join(f"{b:02x}" for b in rx[54:70])   # 16 bytes
+    result = ''.join(f"{b:02x}" for b in rx[70:72])   # 2 bytes
 
     # Print results
     print("TID   :", tid)
