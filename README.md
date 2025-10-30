@@ -1,3 +1,5 @@
+![alt text](image.png)
+
 # SandGrain / CyberRock Suite – Raspberry Pi 4 Integration and Implementation Guide
 
 This document provides a complete overview of the **SandGrain CyberRock Security Suite** running on a **Raspberry Pi 4**.  
