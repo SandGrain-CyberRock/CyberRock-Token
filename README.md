@@ -166,15 +166,15 @@ This suite demonstrates the **full SandGrain hardware‑anchored trust chain** o
 - File integrity proof with HRW tags  
 - Sensor data authenticity verification
 
-Each process integrates hardware‑based cryptography (via SandGrain Token) with **CyberRock Cloud verification**, achieving an end‑to‑end, tamper‑resistant security model for IoT devices.
+Each process integrates hardware‑based cryptography (via SandGrain CyberRock Token) with **CyberRock Cloud verification**, achieving an end‑to‑end, tamper‑resistant security model for IoT devices.
 
 ---
 
 ## 🛠️ Author
 
-**Your Name**  
-SandGrain Cybersecurity / IoT Integration Team  
-📧 your.email@example.com  
+**Support**  
+SandGrain / IoT Integration Team  
+📧 support@sandgrain.eu  
 
 ---
 
