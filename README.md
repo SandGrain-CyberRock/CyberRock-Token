@@ -1,4 +1,8 @@
-![alt text](image.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="image-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="image-light.png">
+  <img alt="SandGrain Logo" src="image-light.png">
+</picture>
 
 # SandGrain / CyberRock Suite – Raspberry Pi 4 Integration and Implementation Guide
 
