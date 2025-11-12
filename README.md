@@ -1,7 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="image-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="image-light.png">
-  <img alt="SandGrain Logo" src="image-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="image-dark.png" width="300">
+  <source media="(prefers-color-scheme: light)" srcset="image-light.png" width="300">
+  <img alt="SandGrain Logo" src="image-light.png" width="300">
 </picture>
 
 # SandGrain / CyberRock Suite – Raspberry Pi 4 Integration and Implementation Guide
