@@ -38,12 +38,6 @@ sudo apt-get install -y python3-pip python3-rpi.gpio python3-spidev
 pip3 install python-periphery requests
 ```
 
-Ensure you have the supporting modules either in the same folder or under `/home/pi/SandGrain/SandGrainSuite_DeviceAPI/`:
-
-- `CyberRock_Cloud.py`
-- `CyberRock_Token.py`
-- `SandGrain_Credentials.py`
-
 ---
 
 ## 🧠 General Notes
