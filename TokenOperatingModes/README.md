@@ -13,8 +13,8 @@ The CyberRock Token communicates with the Raspberry Pi 4 through the SPI0 in
 
 | Raspberry Pi 4 Pin | GPIO | Token Pin | Description |
 |--------------------|-------|------------|-------------|
-| 1 | 3.3 V | 8 | Power Supply |
-| 6 | GND | 4 | Ground |
+| 17 | 3.3 V | 8 | Power Supply |
+| 25 | GND | 4 | Ground |
 | 19 | GPIO 10 | 5 | SPI MOSI |
 | 21 | GPIO 9 | 2 | SPI MISO |
 | 23 | GPIO 11 | 6 | SPI CLK |

@@ -25,8 +25,8 @@ The CyberRock Token communicates with the Raspberry Pi 4 via the SPI interfa
 
 Raspberry Pi 4 GPIO to Token pin connections:
 
-- **Pin 1 (3.3 V)** → Token VDD (Pin 8)  
-- **Pin 6 (GND)** → Token VSS (Pin 4)  
+- **Pin 17 (3.3 V)** → Token VDD (Pin 8)  
+- **Pin 25 (GND)** → Token VSS (Pin 4)  
 - **Pin 19 (BCM 10)** → Token MOSI (Pin 5)  
 - **Pin 21 (BCM 9)** → Token MISO (Pin 2)  
 - **Pin 23 (BCM 11)** → Token CLK (Pin 6)  
